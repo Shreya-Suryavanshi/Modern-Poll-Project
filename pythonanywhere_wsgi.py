@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 # Add your project directory to the sys.path
-project_home = '/home/shreya-suryavanshi/poll_project'
+project_home = '/home/ModernPoll/Modern-Poll-Project'
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
 

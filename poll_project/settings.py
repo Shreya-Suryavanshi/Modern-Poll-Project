@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-ks$sw85%rhn67t6x378a7x!eksizustrj3i1f%vdyf6mwm97b2
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "shreya-suryavanshi.pythonanywhere.com",
+    "modernpoll.pythonanywhere.com",
     "127.0.0.1",
     "localhost",
 ]
