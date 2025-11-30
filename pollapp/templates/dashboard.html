@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Modern Polls{% endblock %}
+
+{% block content %}
+  <div class="fade-in">
+    <div class="dashboard-stats">
+      <div class="stat-card">
+        <div class="stat-number">{{ total_polls }}</div>
+        <div class="stat-label">Total Polls</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ active_polls }}</div>
+        <div class="stat-label">Active Polls</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ total_votes }}</div>
+        <div class="stat-label">Total Votes</div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header">
+        <h2 class="mb-0">Recent Polls</h2>
+      </div>
+      <div class="card-body">
+        {% if recent_polls %}
+          {% for poll in recent_polls %}
+            <div class="poll-card">
+              <div class="poll-question">{{ poll.question }}</div>
+              <div class="poll-meta">
+                <span class="poll-stats">📅 {{ poll.created_at|date:"M d, Y" }}</span>
+                <span class="poll-stats">📊 {{ poll.total_votes }} votes</span>
+                {% if poll.category %}
+                  <span class="poll-category" style="background-color: {{ poll.category.color }}">{{ poll.category.name }}</span>
+                {% endif %}
+              </div>
+              <div class="poll-actions">
+                <a class="btn btn-secondary btn-sm" href="{% url 'view' poll.id %}">🗳️ Vote</a>
+                <a class="btn btn-primary btn-sm" href="{% url 'result' poll.id %}">📈 Results</a>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-secondary">No recent polls.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="mb-0">Most Popular Polls</h2>
+      </div>
+      <div class="card-body">
+        {% if popular_polls %}
+          {% for poll in popular_polls %}
+            <div class="poll-card">
+              <div class="poll-question">{{ poll.question }}</div>
+              <div class="poll-meta">
+                <span class="poll-stats">🗳️ {{ poll.vote_count }} votes</span>
+                {% if poll.category %}
+                  <span class="poll-category" style="background-color: {{ poll.category.color }}">{{ poll.category.name }}</span>
+                {% endif %}
+              </div>
+              <div class="poll-actions">
+                <a class="btn btn-secondary btn-sm" href="{% url 'view' poll.id %}">🗳️ Vote</a>
+                <a class="btn btn-primary btn-sm" href="{% url 'result' poll.id %}">📈 Results</a>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-secondary">No popular polls yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+

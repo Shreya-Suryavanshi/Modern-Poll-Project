@@ -1,0 +1,188 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}Modern Polls{% endblock %}</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <div class="site">
+    <header>
+      <div class="container">
+        <div class="header-content">
+          <a class="brand" href="{% url 'home' %}">
+            📊 Modern Polls
+          </a>
+          <nav class="nav">
+            {% if user.is_authenticated %}
+              <span class="text-secondary">Welcome, {{ user.username }}!</span>
+              {% if user.is_superuser %}
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+                <a href="{% url 'create' %}">Create Poll</a>
+                <a href="{% url 'create_category' %}">Categories</a>
+              {% endif %}
+              <a href="{% url 'ulogout' %}">Logout</a>
+            {% else %}
+              <a href="{% url 'ulogin' %}">Login</a>
+              <a href="{% url 'usignup' %}">Sign Up</a>
+            {% endif %}
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="container">
+        <!-- Messages -->
+        {% if messages %}
+          <div class="messages">
+            {% for message in messages %}
+              <div class="message message-{{ message.tags }}">
+                {% if message.tags == 'success' %}✅{% endif %}
+                {% if message.tags == 'error' %}❌{% endif %}
+                {% if message.tags == 'warning' %}⚠️{% endif %}
+                {% if message.tags == 'info' %}ℹ️{% endif %}
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+    <footer>
+      <div class="container">
+        <p>&copy; {% now "Y" %} Modern Polls - Built with Django & Chart.js</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // Add loading states to forms
+    document.addEventListener('DOMContentLoaded', function() {
+      const forms = document.querySelectorAll('form');
+      forms.forEach(form => {
+        form.addEventListener('submit', function() {
+          const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+          if (submitBtn) {
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<span class="spinner"></span> Processing...';
+          }
+        });
+      });
+
+      // Add fade-in animation to cards
+      const cards = document.querySelectorAll('.poll-card, .card');
+      cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.classList.add('fade-in');
+      });
+
+      // Voting interface enhancements
+      const voteOptions = document.querySelectorAll('.vote-option');
+      voteOptions.forEach(option => {
+        option.addEventListener('click', function() {
+          const radio = this.querySelector('input[type="radio"]');
+          if (radio) {
+            radio.checked = true;
+            voteOptions.forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+          }
+        });
+      });
+    });
+
+    // AJAX voting function
+    function voteAjax(pollId, choice) {
+      fetch(`/api/vote/${pollId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ choice: choice })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Update vote counts on the page
+          document.querySelector('.result-item:nth-child(1) .result-count').textContent = data.op1c;
+          document.querySelector('.result-item:nth-child(2) .result-count').textContent = data.op2c;
+          document.querySelector('.result-item:nth-child(3) .result-count').textContent = data.op3c;
+          
+          // Update progress bars
+          updateProgressBars(data);
+          
+          // Show success message
+          showMessage('Vote recorded successfully!', 'success');
+        } else {
+          showMessage(data.error || 'An error occurred', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showMessage('An error occurred while voting', 'error');
+      });
+    }
+
+    function updateProgressBars(data) {
+      const total = data.total;
+      if (total > 0) {
+        const percentages = [
+          (data.op1c / total) * 100,
+          (data.op2c / total) * 100,
+          (data.op3c / total) * 100
+        ];
+        
+        const bars = document.querySelectorAll('.result-fill');
+        bars.forEach((bar, index) => {
+          bar.style.width = percentages[index] + '%';
+        });
+      }
+    }
+
+    function showMessage(text, type) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message message-${type}`;
+      messageDiv.innerHTML = `
+        ${type === 'success' ? '✅' : '❌'} ${text}
+      `;
+      
+      const messagesContainer = document.querySelector('.messages') || 
+        document.querySelector('.container').insertBefore(
+          document.createElement('div'), 
+          document.querySelector('.container').firstChild
+        );
+      
+      if (!messagesContainer.classList.contains('messages')) {
+        messagesContainer.className = 'messages';
+      }
+      
+      messagesContainer.appendChild(messageDiv);
+      
+      setTimeout(() => {
+        messageDiv.remove();
+      }, 5000);
+    }
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

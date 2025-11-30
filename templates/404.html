@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found - Modern Polls{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h1 class="mb-0">404 - Page Not Found</h1>
+    </div>
+    <div class="card-body">
+      <p class="text-secondary">The page you are looking for doesn’t exist or has been moved.</p>
+      <div class="mt-4">
+        <a href="{% url 'home' %}" class="btn btn-primary">🏠 Go to Home</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+

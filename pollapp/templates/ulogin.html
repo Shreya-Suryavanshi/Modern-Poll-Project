@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Login - Polls{% endblock %}
+
+{% block content %}
+  <div class="card" role="region" aria-label="Login form">
+    <h1>Login</h1>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="form-group">
+        <input class="form-control" type="text" name="un" placeholder="Enter username" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <input class="form-control" type="password" name="pw" placeholder="Enter password" required autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" type="submit">Login</button>
+    </form>
+
+    {% if msg %}
+      <p class="msg">{{ msg }}</p>
+    {% endif %}
+
+    <p class="text-secondary mt-3">Don't have an account? <a class="link-inline" href="{% url 'usignup' %}">Sign up</a></p>
+  </div>
+{% endblock %}

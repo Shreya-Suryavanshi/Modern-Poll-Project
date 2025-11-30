@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Create Category - Modern Polls{% endblock %}
+
+{% block content %}
+	<div class="card">
+		<div class="card-header">
+			<h1 class="mb-0">🗂️ Create Category</h1>
+		</div>
+		<div class="card-body">
+			<form method="POST" novalidate>
+				{% csrf_token %}
+				<div class="form-group">
+					{{ form.as_p }}
+				</div>
+				<button type="submit" class="btn btn-primary">Create Category</button>
+			</form>
+		</div>
+	</div>
+{% endblock %}
+
+

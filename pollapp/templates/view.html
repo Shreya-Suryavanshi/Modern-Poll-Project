@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Vote - {{ poll.question|truncatechars:50 }}{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <div class="card">
+    <div class="card-header">
+      <h1 class="text-center mb-0">🗳️ Cast Your Vote</h1>
+    </div>
+    
+    <div class="card-body">
+      <div class="poll-question mb-4">{{ poll.question }}</div>
+      
+      {% if poll.description %}
+        <div class="poll-description mb-4">{{ poll.description }}</div>
+      {% endif %}
+      
+      <div class="poll-meta mb-4">
+        {% if poll.category %}
+          <span class="poll-category" style="background-color: {{ poll.category.color }}">
+            {{ poll.category.name }}
+          </span>
+        {% endif %}
+        
+        <span class="poll-stats">
+          📊 {{ poll.total_votes }} total votes
+        </span>
+        
+        <span class="poll-stats">
+          📅 Created {{ poll.created_at|date:"M d, Y" }}
+        </span>
+        
+        {% if poll.expires_at %}
+          <span class="poll-stats">
+            ⏰ Expires {{ poll.expires_at|date:"M d, Y" }}
+          </span>
+        {% endif %}
+      </div>
+
+      {% if has_voted %}
+        <div class="message message-info mb-4">
+          ✅ You have already voted on this poll!
+        </div>
+        
+        <div class="text-center">
+          <a href="{% url 'result' poll.id %}" class="btn btn-primary">
+            📈 View Results
+          </a>
+          <a href="{% url 'home' %}" class="btn btn-secondary">
+            🏠 Back to Home
+          </a>
+        </div>
+      {% else %}
+        <form method="POST" id="voteForm">
+          {% csrf_token %}
+          
+          <div class="voting-options">
+            <div class="vote-option" onclick="selectOption(event,'op1')">
+              <input type="radio" name="choice" value="op1" id="op1" required>
+              <label for="op1">{{ poll.op1 }}</label>
+            </div>
+            
+            <div class="vote-option" onclick="selectOption(event,'op2')">
+              <input type="radio" name="choice" value="op2" id="op2">
+              <label for="op2">{{ poll.op2 }}</label>
+            </div>
+            
+            <div class="vote-option" onclick="selectOption(event,'op3')">
+              <input type="radio" name="choice" value="op3" id="op3">
+              <label for="op3">{{ poll.op3 }}</label>
+            </div>
+          </div>
+          
+          <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">
+              🗳️ Submit Vote
+            </button>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+function selectOption(event, choice) {
+  // Remove selected class from all options
+  document.querySelectorAll('.vote-option').forEach(option => {
+    option.classList.remove('selected');
+  });
+  
+  // Add selected class to clicked option
+  event.currentTarget.classList.add('selected');
+  
+  // Check the radio button
+  document.getElementById(choice).checked = true;
+}
+
+// Form validation
+document.getElementById('voteForm').addEventListener('submit', function(e) {
+  const selectedChoice = document.querySelector('input[name="choice"]:checked');
+  if (!selectedChoice) {
+    e.preventDefault();
+    showMessage('Please select an option before voting', 'error');
+  }
+});
+</script>
+{% endblock %}

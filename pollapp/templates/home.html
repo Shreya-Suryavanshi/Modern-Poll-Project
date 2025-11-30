@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Home - Modern Polls{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <!-- Welcome Section -->
+  <div class="card mb-4">
+    <div class="card-body text-center">
+      <h1 class="mb-2">Welcome to Modern Polls</h1>
+      <p class="text-secondary mb-4">Discover, vote, and analyze polls with beautiful visualizations</p>
+      
+      {% if user.is_superuser %}
+        <div class="flex gap-3 justify-center">
+          <a href="{% url 'create' %}" class="btn btn-primary">
+            ➕ Create New Poll
+          </a>
+          <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+            📊 Dashboard
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="search-filters">
+    <form method="GET" class="filter-row">
+      <div class="filter-group">
+        <label class="form-label">Search Polls</label>
+        <input type="text" name="search" value="{{ search_query }}" 
+               placeholder="Search by question or description..." 
+               class="form-control">
+      </div>
+      
+      <div class="filter-group">
+        <label class="form-label">Category</label>
+        <select name="category" class="form-control">
+          <option value="">All Categories</option>
+          {% for category in categories %}
+            <option value="{{ category.id }}" 
+                    {% if category_filter == category.id|stringformat:"s" %}selected{% endif %}>
+              {{ category.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label class="form-label">Sort By</label>
+        <select name="sort" class="form-control">
+          <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+          <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+          <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>Most Popular</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <button type="submit" class="btn btn-primary">🔍 Search</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Polls Grid -->
+  {% if polls %}
+    <div class="mb-4">
+      <h2 class="text-center mb-4">
+        {% if search_query or category_filter %}
+          Search Results ({{ polls.paginator.count }} found)
+        {% else %}
+          Active Polls
+        {% endif %}
+      </h2>
+      
+      <div class="polls-grid">
+        {% for poll in polls %}
+          <div class="poll-card">
+            <div class="poll-question">{{ poll.question }}</div>
+            
+            {% if poll.description %}
+              <div class="poll-description">{{ poll.description }}</div>
+            {% endif %}
+            
+            <div class="poll-meta">
+              {% if poll.category %}
+                <span class="poll-category" style="background-color: {{ poll.category.color }}">
+                  {{ poll.category.name }}
+                </span>
+              {% endif %}
+              
+              <span class="poll-stats">
+                📊 {{ poll.total_votes }} votes
+              </span>
+              
+              <span class="poll-stats">
+                👁️ {{ poll.analytics.views_count|default:0 }} views
+              </span>
+              
+              <span class="poll-stats">
+                📅 {{ poll.created_at|date:"M d, Y" }}
+              </span>
+              
+              {% if poll.expires_at %}
+                <span class="poll-stats">
+                  ⏰ Expires {{ poll.expires_at|date:"M d, Y" }}
+                </span>
+              {% endif %}
+            </div>
+            
+            <div class="poll-actions">
+              <a href="{% url 'view' poll.id %}" class="btn btn-primary btn-sm">
+                🗳️ Vote Now
+              </a>
+              <a href="{% url 'result' poll.id %}" class="btn btn-secondary btn-sm">
+                📈 View Results
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      
+      <!-- Pagination -->
+      {% if polls.has_other_pages %}
+        <div class="pagination">
+          {% if polls.has_previous %}
+            <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">First</a>
+            <a href="?page={{ polls.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Previous</a>
+          {% endif %}
+          
+          <span class="current">
+            Page {{ polls.number }} of {{ polls.paginator.num_pages }}
+          </span>
+          
+          {% if polls.has_next %}
+            <a href="?page={{ polls.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Next</a>
+            <a href="?page={{ polls.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Last</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="card text-center">
+      <div class="card-body">
+        <h3 class="mb-3">No polls found</h3>
+        <p class="text-secondary mb-4">
+          {% if search_query or category_filter %}
+            Try adjusting your search criteria or browse all polls.
+          {% else %}
+            Be the first to create a poll!
+          {% endif %}
+        </p>
+        
+        {% if user.is_superuser %}
+          <a href="{% url 'create' %}" class="btn btn-primary">
+            ➕ Create First Poll
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+.polls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .polls-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+{% endblock %}
